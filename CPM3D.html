@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>3D CPM</title>
+	<meta charset="utf-8">
+	<link rel="stylesheet" type="text/css" href="src/dragdealer.css"></link>
+	<style type="text/css">
+		body
+		{
+			background-color: white;
+			margin: 5 ; padding: 5;
+		}
+	</style>
+
+	<script type="text/javascript" src="src/three.min.js"></script>
+	<script type="text/javascript" src="src/TrackballControls.js"></script>
+	<script type="text/javascript" src="src/DiceSet.js"></script>
+	<script type="text/javascript" src="src/CPMCanvas.js"></script>
+	<script type="text/javascript" src="src/CPM.js"></script>
+	<script type="text/javascript" src="src/CPMStats.js"></script>
+	<script type="text/javascript" src="settings/CPM3D-template.js"></script>
+	<script type="text/javascript" src="settings/CPM3D-settings.js"></script>
+	<script type="text/javascript" src="src/dragdealer.js"></script>
+	<script type="text/javascript" src="src/simulation.js"></script>
+	<script type="text/javascript" src="src/viz.js"></script>
+	<script type="text/javascript">
+
+	/* Optional: set some parameters via the url */
+	var urlParams = new URLSearchParams(window.location.search)
+	var dim = urlParams.get("dim") || 3
+	var field_size = Cset.field_size.x//parseInt(urlParams.get("fieldSize")) || 70
+	var mesh_step = parseInt(urlParams.get("meshStep")) || 15
+	var n_cells = simsettings["NRCELLS"]//parseInt(urlParams.get("nCells")) || 1
+
+	/* Global variables that are not model parameters
+		stopit tracks whether the simulation is running.
+	*/
+	var i,j,k,		// counting variables
+		stopit = 0,	// track whether the simulation is running (start/stop button)
+		C,Cs,		// for the CPM itself and the CPMStats object
+		ADD_FRCS = 0,	// if ADD_FRCS = 0, draw the grid
+		frc_rotate = 0,	// used in combination with the "rot" button to rotate camera.
+		draw_each = 1,	// Time resolution of drawing the grid (in combi with draw_clock)
+		draw_clock = 0	// The drawing clock starts at 0
+
+
+
+	/* Load parameters from settings/CPM3D-template.js (which contains the variable Cset) */
+	var cpmconf = Cset.conf
+
+	var stromadata
+	console.log(stromadata)
+	fetch('stroma_test2.txt').then(response => response.text()).then(text => stromadata = text.split('\n'))
+	console.log(stromadata)
+
+	var WS_SERVER="ws://192.168.1.19:1337"
+
+
+	/* helper function used by addslider below*/
+	function $id( id ){
+		return document.getElementById(id)
+	}
+
+	/** Function to add a slider for the model parameter "what". The default
+		is retrieved from conf, and sliders are set up such that the
+		default value is 1/4 of the max value */
+	function addslider( what, conf  ){
+
+		// the slider is a div of class dragdealer.
+		var sliderEl = document.createElement('div')
+		sliderEl.setAttribute("class","dragdealer rounded-cornered")
+		sliderEl.style.width="500px"
+		// inside this div is another div with the handle.
+		sliderEl.innerHTML = `<div class="red-bar handle">${what}=<span id="${what}val">0</span></div>`
+
+		// id is the parametername + "slider"
+		sliderEl.setAttribute("id", what+"slider" )
+		document.getElementById("sliders").appendChild( sliderEl )
+
+		var maxval = 4*conf[what][1]
+		if( maxval == 0 ){
+			maxval = 1
+		}
+		// the callback function if the slider is changed: change the appropriate value in conf.
+		var f = function(x){
+			conf[what][1] = maxval * x;
+			$id(what+'val').innerHTML = conf[what][1].toPrecision(3)
+		}
+		// now create the dragdealer.
+		new Dragdealer( what+'slider',
+			{ x : conf[what][1]/maxval, animationCallback: f } )
+	}
+
+	/* Helper function to apply function f to each element in a */
+	function each( a, f ){
+		for( var i = 0 ; i < a.length ; i ++ ){
+			f(a[i])
+		}
+	}
+
+	/* Initialization of GUI and simulation */
+	function runit(){
+
+
+
+		// Generate the CPM with the right settings
+		if( dim == 3 ){
+			C = new CPM( dim, { x:field_size, y:field_size, z:field_size }, cpmconf )
+		} else {
+			C = new CPM( dim, { x:field_size, y:field_size }, cpmconf )
+		}
+		/*each( ['MAX_ACT', 'LAMBDA_ACT'
+			//,'V', 'P', 'LAMBDA_CONNECTIVITY', 'LAMBDA_P',	'LAMBDA_V'
+			], function(p){
+			addslider( p, C.conf ) } ) */
+
+		Cim = new CPMCanvas( C ) // dummy
+		Cs = new CPMStats( C )
+
+		// var stromacoordinates = []
+		// let xsize = Cset.field_size.x
+		// let zsize = Cset.field_size.z
+		// for ( let i = 0; i < stromadata.length-1; i++ ) {
+		// 	if (stromadata[i] > 100) {
+		// 		let x = i%xsize
+		// 		let y = (i/(xsize*zsize)) >> 0
+		// 		let z = ((i%(xsize*zsize))/xsize) >> 0
+		// 		console.log(i, [x, y, z])
+		// 		stromacoordinates.push([x, y, z])
+		// 	}
+		// }
+		//
+		// C.addStroma(stromacoordinates)
+		// C.addStromaBorder(-1)
+
+		var stromacoordinates = []
+
+		// for ( let x = 0; x < Cset.field_size.x; x ++ ) {
+		// 	for ( let y = 0; y < Cset.field_size.y; y ++ ) {
+		// 		for ( let z = 0; z < Cset.field_size.z; z ++ ) {
+		// 			if (Math.abs(x - 0.25*Cset.field_size.x) < 2 && Math.abs(z - 0.75*Cset.field_size.z) < 2 || Math.abs(x - 0.75*Cset.field_size.x) < 2 && Math.abs(z - 0.25*Cset.field_size.z) < 2) {
+		// 				stromacoordinates.push([x, y, z])
+		// 			}
+		// 		}
+		// 	}
+		// }
+
+		for ( let x = 0; x < Cset.field_size.x; x ++ ) {
+			for ( let y = 0; y < Cset.field_size.y; y ++ ) {
+				for ( let z = 0; z < Cset.field_size.z; z ++ ) {
+					let avg = ( x + y + z ) / 3
+					if (Math.abs(x - avg) < 2 && Math.abs(y - avg) < 2 && Math.abs(z - avg) < 2) {
+						stromacoordinates.push([x, y, z])
+					}
+				}
+			}
+		}
+		C.addStroma(stromacoordinates)
+
+		sim = new simulation( C, Cim, Cs, simsettings )
+
+
+
+		dim == 3 ? init3d( 500, 500 ) : init2d()
+
+		for( var i = 0 ; i < n_cells ; i ++ ){
+			C.seedCell(1)
+		}
+
+		stopit = 0
+
+
+
+
+		// mainloop()
+	}
+
+	function reset(){
+		C = new CPM( dim, { x:field_size, y:field_size, z:field_size }, cpmconf )
+		Cim = new CPMCanvas( C ) // dummy
+		Cs = new CPMStats( C )
+
+		sim = new simulation( C, Cim, Cs, simsettings )
+		for( var i = 0 ; i < n_cells ; i ++ ){
+			C.seedCellAt( 1, [field_size/2,field_size/2,field_size/2] )
+		}
+
+		stopit = 1
+	}
+
+	function getLocations (cpi) {
+		let locations = []
+		let ids = Object.keys( cpi )
+		for ( let i = 0; i < ids.length; i ++ ) {
+			locations.push(Cs.getCentroidOf(ids[i], cpi[ids[i]]))
+		}
+		return locations
+	}
+
+	function movementDirection(locations, locationsNew) {
+		let differences = []
+		let UV = []
+		for ( let i = 0; i < locations.length; i ++ ) {
+			let difference = []
+			for ( let j = 0; j < locations[0].length; j ++ ) {
+				difference.push(locationsNew[i][j] - locations[i][j])
+			}
+			differences.push(difference)
+			UV.push(C.getUV(difference[0], difference[1], difference[2]))
+		}
+		return [differences, UV]
+	}
+
+	function updateDirForced (id, did) {
+		for ( let i = 0; i < id.length; i ++ ) {
+			let len = 0
+			for ( let j = 0; j < C.prefdir[id[i]].length; j ++ ) {
+				C.prefdir[id[i]][j] += (did[i][j]/100)*C.par("LAMBDA_FORCEDDIR",1)
+				len += Math.pow(C.prefdir[id[i]][j],2)
+			}
+			for ( let j = 0; j < C.prefdir[id[i]].length; j ++ ) {
+				C.prefdir[id[i]][j] /= len
+			}
+		}
+	}
+
+	/* The below function executes two monte carlo steps */
+	function mainloop(){
+		// compute the midpoint of the grid.
+		var x2 = C.field_size.x/2, y2 = C.field_size.y/2, z2 = C.field_size.z/2
+		var t0 = performance.now()
+
+		// get cpi for updates
+		let cpi = Cs.cellpixelsi()
+
+		// Converts UV into direction
+		C.updateDir(Object.keys( cpi ))
+
+		console.log(C.prefdir[1])
+
+		// get locations for actual direction
+		let locations = this.getLocations(cpi)
+		C.monteCarloStep()
+		let locationsNew = this.getLocations(cpi)
+		let did = this.movementDirection(locations, locationsNew)
+		// recent movement in terms of U an V
+		let didUV = did[1]
+		let didXYZ = did[0]
+
+		// console.log(locations, locationsNew, did, didUV);
+
+		// Update Dir with actual movement
+		// this.updateDirForced(Object.keys( cpi ), did)
+
+
+		// Change dir (since it has been changed according to the actual movement) to UV and update UV with randomness
+		C.updateForcedUV(Object.keys( cpi ), didXYZ)
+		C.updateRandUV(Object.keys( cpi ))
+
+
+
+		// rotate the viewpoint
+		if( frc_rotate > 0 ){
+			controls && (controls.enabled= false)
+			frc_rotate --;
+			// frcNet.rotation.x = Math.PI*2*frc_rotate/360
+			camera.position.y = y2+1.26*x2*2*Math.sin( Math.PI*2*frc_rotate/360 )
+			camera.position.z = z2+1.26*x2*2*Math.cos( Math.PI*2*frc_rotate/360 )
+			camera.lookAt( new THREE.Vector3( x2, y2, z2 ) )
+			if( frc_rotate == 0 ){
+				TAKE_SHOT = 0
+				// controls.enabled= true
+			}
+		}
+
+		var t1 = performance.now()-t0;
+		//$id('logger').innerHTML = Math.round(t1)+"ms "
+		//$id('logger').innerHTML = Cs.cellsOnNetwork().join(",") // Math.round(t1)+"ms "+
+		//	C.cellvolume[1] + " " + C.cellvolume[2]
+
+		// Display every 'draw_each' steps.
+		if( ( draw_clock ++ % draw_each == 0 ) || stopit == 1 ){
+			dim == 3 ? render3d() : render2d()
+		}
+		dim == 3 && controls && controls.update()
+		if( C.time > 5000 ){
+			stopit = 1
+			C.time = 0
+		}
+		if( !stopit  ){
+			requestAnimationFrame( mainloop )
+		}
+	}
+
+
+
+	function startanim(){
+		frameCaptureSocket = new WebSocket(WS_SERVER)
+		frameCaptureSocket.onclose = function(e){
+			console.log( e )
+		}
+		stopit=0
+		requestAnimationFrame( mainloop )
+	}
+
+	function stopanim(){
+		frameCaptureSocket.close()
+		stopit=1
+	}
+
+	function networkExtents( pad ){
+		var x_max = 0, y_max = 0, z_max = 0;
+		for( var i = 0 ; i < edges.length ; i ++ ){
+			for( var j = 2 ; j < edges[i].length ; j ++ ){
+				x_max = Math.max( x_max, edges[i][j][0] )
+				y_max = Math.max( y_max, edges[i][j][1] )
+				z_max = Math.max( z_max, edges[i][j][2] )
+			}
+		}
+		return { x : Math.ceil(x_max)+pad, y : Math.ceil(y_max)+pad, z : Math.ceil(z_max)+pad }
+	}
+
+	</script>
+</head>
+<body onload="runit();startanim()">
+
+<div>
+<button onclick="startanim()">start</button>
+<button onclick="stopanim()">stop</button>
+<button onclick="stopanim();reset();startanim()">reset</button>
+<p></p>
+</div>
+
+<div style="width:600px; margin:auto">
+
+	<!--<div id="sliders">
+	</div>-->
+	<p></p>
+	<div id="stage">
+	</div>
+
+	<div>
+		<!--<button onclick="C.seedCell()">create cell</button>-->
+		<!--<button onclick="C.killCell()">kill cell</button>-->
+		<button onclick="stopanim()">stop </button>
+		<!--<button onclick="requestAnimationFrame( mainloop )">step simulation</button>-->
+		<button onclick="startanim()">start </button>
+		<button onclick="reset()"> reset </button>
+		<!--<button onclick="TAKE_SHOT=1">rec</button>-->
+		<!--<button onclick="TAKE_SHOT=0">stop rec </button>-->
+		<!--<button onclick="TAKE_SHOT=1;frc_rotate=360">rot </button>-->
+		<!--<script>
+			if( dim==3 ){
+				document.write('<button onclick="window.location=\'?dim=2\'">2D</button>')
+			} else {
+				document.write('<button onclick="window.location=\'?dim=3\'">3D</button>')
+			}
+		</script>-->
+
+	</div>
+
+	</div>
+
+
+
+
+
+</div>
+
+</body>
+</html>
