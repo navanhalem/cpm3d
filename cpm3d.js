@@ -15,9 +15,10 @@
 
   var l_forceddir = parseInt(process.argv[2]) || 0
   var l_randdir = parseInt(process.argv[3]) || 0
-  var n_cells = parseInt(process.argv[4]) || 10
-  var field_size = parseInt(process.argv[5]) || 500
-  var runtime = parseInt(process.argv[6]) || 2000
+  var l_dir = parseInt(process.argv[4]) || 0
+  var n_cells = parseInt(process.argv[5]) || 10
+  var field_size = parseInt(process.argv[6]) || 500
+  var runtime = parseInt(process.argv[7]) || 2000
 
 	/* Global variables that are not model parameters
 		stopit tracks whether the simulation is running.
@@ -33,6 +34,7 @@
 	/* Load parameters from settings/CPM3D-template.js (which contains the variable Cset) */
   Cset.conf["LAMBDA_FORCEDDIR"][1] = l_forceddir
   Cset.conf["LAMBDA_RANDDIR"][1] = l_randdir
+  Cset.conf["LAMBDA_DIR"][1] = l_randdir
 	var cpmconf = Cset.conf
 
 
