@@ -861,18 +861,30 @@ class CPM {
 		let str = this.par("LAMBDA_RANDDIR",1)
 		for ( let i = 0; i < id.length; i ++ ) {
 			this.prefUV[id[i]][0] +=  ((Math.random()-.5)/10000)*str
+			// if (this.prefUV[id[i]][0] < 0 ) {
+			// 	this.prefUV[id[i]][0] = 0
+			// }
+			// if (this.prefUV[id[i]][0] > 1 ) {
+			// 	this.prefUV[id[i]][0] = 1
+			// }
 			if (this.prefUV[id[i]][0] < 0 ) {
-				this.prefUV[id[i]][0] = 0
+				this.prefUV[id[i]][0] += 1
 			}
 			if (this.prefUV[id[i]][0] > 1 ) {
-				this.prefUV[id[i]][0] = 1
+				this.prefUV[id[i]][0] -= 1
 			}
 			this.prefUV[id[i]][1] +=  ((Math.random()-.5)/10000)*str
+			// if (this.prefUV[id[i]][1] < 0 ) {
+			// 	this.prefUV[id[i]][1] = 0
+			// }
+			// if (this.prefUV[id[i]][1] > 1 ) {
+			// 	this.prefUV[id[i]][1] = 1
+			// }
 			if (this.prefUV[id[i]][1] < 0 ) {
-				this.prefUV[id[i]][1] = 0
+				this.prefUV[id[i]][1] *= -1
 			}
 			if (this.prefUV[id[i]][1] > 1 ) {
-				this.prefUV[id[i]][1] = 1
+				this.prefUV[id[i]][1] = 1 - ( 1 - this.prefUV[id[i]][1] )
 			}
 		}
 	}
