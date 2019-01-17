@@ -34,7 +34,7 @@
 	/* Load parameters from settings/CPM3D-template.js (which contains the variable Cset) */
   Cset.conf["LAMBDA_FORCEDDIR"][1] = l_forceddir
   Cset.conf["LAMBDA_RANDDIR"][1] = l_randdir
-  Cset.conf["LAMBDA_DIR"][1] = l_randdir
+  Cset.conf["LAMBDA_DIR"][1] = l_dir
 	var cpmconf = Cset.conf
 
 

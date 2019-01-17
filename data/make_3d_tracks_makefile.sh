@@ -2,7 +2,7 @@ settings=$settingsfolder/$expname-settings.js
 template=$settingsfolder/$expname-template.js #txt
 
 paramfile=params.txt
-nsim=20
+nsim=1
 
 # ---------------------------------------------------------------------
 # CODE:
@@ -26,8 +26,7 @@ for p in $(seq 1 $np) ; do
 	# Now the recipes for the individual simulation tracks
 	for sim in $(seq 1 $nsim) ; do
 
-		# Ensure the loop can be easily stopped
-		trap "exit 1" SIGINT SIGTERM
+		
 
 		# trackfiles
 		FILE=data/$NAME-sim$sim.txt
