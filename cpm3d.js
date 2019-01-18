@@ -16,9 +16,10 @@
   var l_forceddir = parseInt(process.argv[2]) || 0
   var l_randdir = parseInt(process.argv[3]) || 0
   var l_dir = parseInt(process.argv[4]) || 0
-  var n_cells = parseInt(process.argv[5]) || 10
+  var n_cells = parseInt(process.argv[5]) || 1
   var field_size = parseInt(process.argv[6]) || 500
-  var runtime = parseInt(process.argv[7]) || 2000
+  var runtime = parseInt(process.argv[7]) || 3000
+  var stroma = parseInt(process.argv[8]) || 0
 
 	/* Global variables that are not model parameters
 		stopit tracks whether the simulation is running.
@@ -75,6 +76,21 @@
 		// C.addStromaBorder(-1)
 
 		var stromacoordinates = []
+
+    for ( let x = 0; x < field_size; x ++ ) {
+      for ( let y = 0; y < field_size; y ++ ) {
+        for ( let z = 0; z < field_size; z ++ ) {
+          // let avg = ( x + y + z ) / 3
+          // if (Math.abs(x - avg) < 2 && Math.abs(y - avg) < 2 && Math.abs(z - avg) < 2) {
+          // 	stromacoordinates.push([x, y, z])
+          // }
+          if ( Math.pow(Math.abs(x - 0.6*field_size ), Math.abs(y - 0.6*field_size )) < 11 && Math.abs(x - 0.6*field_size ) < 5 && Math.abs(y - 0.6*field_size ) < 5 || Math.pow(Math.abs(x - 0.6*field_size ), Math.abs(z - 0.6*field_size )) < 11 && Math.abs(x - 0.6*field_size ) < 5 && Math.abs(z - 0.6*field_size ) < 5 || Math.pow(Math.abs(y - 0.6*field_size ), Math.abs(z - 0.6*field_size )) < 11 && Math.abs(y - 0.6*field_size ) < 5 && Math.abs(z - 0.6*field_size ) < 5 ) {
+            stromacoordinates.push([x, y, z])
+          }
+        }
+      }
+    }
+
 		// for ( let x = 0; x < Cset.field_size.x; x ++ ) {
 		// 	for ( let y = 0; y < Cset.field_size.y; y ++ ) {
 		// 		for ( let z = 0; z < Cset.field_size.z; z ++ ) {
@@ -95,7 +111,9 @@
 		// 		}
 		// 	}
 		// }
-		// C.addStroma(stromacoordinates)
+    if ( stroma ) {
+      C.addStroma(stromacoordinates)
+    }
 
 		sim = new simulation( C, null, Cs, simsettings )
     if ( n_cells == 1 ) {
@@ -150,21 +168,28 @@
 
       // get cpi for updates
   		let cpi = Cs.cellpixelsi()
-      let cpiKeys = Object.keys( cpi )
 
   		// Converts UV into direction
-  		C.updateDir( cpiKeys )
+  		C.updateDir(Object.keys( cpi ))
 
   		// get locations for actual direction
   		let locations = getLocations(cpi)
   		C.monteCarloStep()
   		let locationsNew = getLocations(cpi)
-      // recent movement in terms of U an V
-  		let didUV = movementDirection(locations, locationsNew)[1]
+  		let did = movementDirection(locations, locationsNew)
+  		// recent movement in terms of U an V
+  		let didUV = did[1]
+  		let didXYZ = did[0]
+
+  		// console.log(locations, locationsNew, did, didUV);
+
+  		// Update Dir with actual movement
+  		// this.updateDirForced(Object.keys( cpi ), did)
+
 
   		// Change dir (since it has been changed according to the actual movement) to UV and update UV with randomness
-  		C.updateForcedUV( cpiKeys, didUV )
-  		C.updateRandUV( cpiKeys )
+  		C.updateForcedUV(Object.keys( cpi ), didXYZ)
+  		C.updateRandUV(Object.keys( cpi ))
 
       // to keep track of locations
       Cs.centroids()

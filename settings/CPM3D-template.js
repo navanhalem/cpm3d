@@ -1,13 +1,13 @@
 var Cset = {
 	// used by node only
 	ndim : 3,
-	field_size : {x: 100, y:100, z:100 },
+	field_size : {x: 50, y:50, z:50 },
 	// used by html
 	conf : {
 		LAMBDA_CONNECTIVITY : [0,0],
 		LAMBDA_RANDDIR : [0,0],
-		LAMBDA_FORCEDDIR : [0,0],
-		LAMBDA_DIR : [0,200],
+		LAMBDA_FORCEDDIR : [0,100],
+		LAMBDA_DIR : [0,500],
 		LAMBDA_CENTER : [0,0],
 		LAMBDA_SA : [0,0],
 		LAMBDA_P : [0,.2],

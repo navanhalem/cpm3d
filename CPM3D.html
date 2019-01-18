@@ -147,8 +147,11 @@
 		for ( let x = 0; x < Cset.field_size.x; x ++ ) {
 			for ( let y = 0; y < Cset.field_size.y; y ++ ) {
 				for ( let z = 0; z < Cset.field_size.z; z ++ ) {
-					let avg = ( x + y + z ) / 3
-					if (Math.abs(x - avg) < 2 && Math.abs(y - avg) < 2 && Math.abs(z - avg) < 2) {
+					// let avg = ( x + y + z ) / 3
+					// if (Math.abs(x - avg) < 2 && Math.abs(y - avg) < 2 && Math.abs(z - avg) < 2) {
+					// 	stromacoordinates.push([x, y, z])
+					// }
+					if ( Math.pow(Math.abs(x - 0.6*field_size ), Math.abs(y - 0.6*field_size )) < 11 && Math.abs(x - 0.6*field_size ) < 5 && Math.abs(y - 0.6*field_size ) < 5 ) {
 						stromacoordinates.push([x, y, z])
 					}
 				}
@@ -162,9 +165,18 @@
 
 		dim == 3 ? init3d( 500, 500 ) : init2d()
 
-		for( var i = 0 ; i < n_cells ; i ++ ){
-			C.seedCell(1)
-		}
+
+		if ( n_cells == 1 ) {
+      C.seedCellAt( 1, [10,10,10] )
+    } else {
+  		for( var i = 0 ; i < n_cells ; i ++ ){
+  			C.seedCell(1)
+  		}
+    }
+
+		// for( var i = 0 ; i < n_cells ; i ++ ){
+		// 	C.seedCell(1)
+		// }
 
 		stopit = 0
 
