@@ -1,7 +1,7 @@
 settings=$settingsfolder/$expname-settings.js
 template=$settingsfolder/$expname-template.js #txt
 
-paramfile=params_forced_rand_dir_stroma.txt
+paramfile=params_forced_rand_dir_no_stroma.txt
 nsim=10
 
 # ---------------------------------------------------------------------
@@ -22,7 +22,7 @@ for p in $(seq 1 $np) ; do
 	STROMA=$( cat $paramfile | awk -v line=$p 'NR==line{print $4}')
 	EXPNAME="3d"
 		
-	NAME=$EXPNAME-lforced$LFORCED-lrand$LRAND-ldir$LDIR
+	NAME=$EXPNAME-lforced$LFORCED-lrand$LRAND-ldir$LDIR-stroma$STROMA
 
 	# Now the recipes for the individual simulation tracks
 	for sim in $(seq 1 $nsim) ; do
