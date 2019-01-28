@@ -20,6 +20,8 @@
   var field_size = parseInt(process.argv[6]) || 500
   var runtime = parseInt(process.argv[7]) || 3000
   var stroma = parseInt(process.argv[8]) || 0
+  var l_act = parseInt(process.argv[9]) || 0
+  var m_act = parseInt(process.argv[10]) || 0
 
 	/* Global variables that are not model parameters
 		stopit tracks whether the simulation is running.
@@ -36,6 +38,8 @@
   Cset.conf["LAMBDA_FORCEDDIR"][1] = l_forceddir
   Cset.conf["LAMBDA_RANDDIR"][1] = l_randdir
   Cset.conf["LAMBDA_DIR"][1] = l_dir
+  Cset.conf["LAMBDA_ACT"][1] = l_act
+  Cset.conf["MAX_ACT"][1] = m_act
 	var cpmconf = Cset.conf
 
 

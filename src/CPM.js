@@ -98,7 +98,7 @@ class CPM {
 		}
 
 		// terms to use in the Hamiltonian
-		this.terms = ["adhesion","volume","perimeter","dir"]//,"actmodel","center"] //,"tostroma"] //,"connectivity"]
+		this.terms = ["adhesion","volume","perimeter","dir","actmodel"]//,"center"] //,"tostroma"] //,"connectivity"]
 
 	}
 
