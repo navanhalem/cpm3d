@@ -28,7 +28,7 @@ for p in $(seq 1 $np) ; do
 		# trackfiles
 		FILE=data/$NAME-sim$sim.txt
 		echo "$FILE : ../../cpm3d.js"
-		echo -e "\t@"node \$\< 0 0 0 1 1000 2000 0 $LACT $MAXACT "> \$@"
+		echo -e "\t@"node \$\< 0 0 0 1 1000 20000 0 $LACT $MAXACT "> \$@"
 		echo "all : "$FILE
 	done
 done
