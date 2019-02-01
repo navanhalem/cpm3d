@@ -83,7 +83,7 @@ class CPM {
 		this.stromapixelstype = {}		// celltype (identity) for all stroma pixels.
 
 		// Attributes per cell:
-		this.prefUV = []
+		// this.prefUV = []
 		this.prefdir = []
 		this.cellvolume = []
 		this.cellperimeter = []
@@ -810,82 +810,23 @@ class CPM {
 		return -deltaH
 	}
 
-	getDir( U, V ) {
-		//x
-		let x = Math.sin( U * 2 * Math.PI ) * Math.cos( Math.acos( 2 * V - 1 ) )
-		// y
-		let y = Math.sin( U * 2 * Math.PI ) * Math.sin( Math.acos( 2 * V - 1 ) )
-		// z
-		let z = Math.cos( U * 2 * Math.PI )
-
-		return [x, y, z]
-	}
-
-	updateDir (id) {
+	// updates the preferred direction based on another direction and parameter strength
+	updateDir (id, otherDirs, parameter) {
+		let strength = this.par(parameter,1)
 		for ( let i = 0; i < id.length; i ++ ) {
-			// U
-			let U = this.prefUV[id[i]][0]
-			// V
-			let V = this.prefUV[id[i]][1]
-
-			// x
-			this.prefdir[id[i]] = this.getDir( U, V )
-		}
-	}
-
-	getUV ( x, y, z ) {
-		let len = Math.pow( Math.pow( x, 2 ) + Math.pow( y, 2 ) + Math.pow( z, 2 ), 0.5 )
-		let U = Math.acos( z / len ) / ( 2 * Math.PI )
-		let V = ( Math.cos( Math.atan( y / x ) ) + 1 ) / 2
-		return [U,V]
-	}
-
-	updateForcedUV (id, XYZChangeList) {
-		let forceParam = this.par("LAMBDA_FORCEDDIR",1)
-		for ( let i = 0; i < id.length; i ++ ) {
-			let dXYZ = XYZChangeList[i]
-			if ( !(isNaN(dXYZ[0])) && !(isNaN(dXYZ[1])) && !(isNaN(dXYZ[2])) ) {
+			let otherDir = otherDirs[i]
 			// X
-			let newX = (this.prefdir[id[i]][0] * (1000 - forceParam) + dXYZ[0] * forceParam) / 1000
+			let x = (this.prefdir[id[i]][0] * (1000 - strength) + otherDir[0] * strength) / 1000
 			// Y
-			let newY = (this.prefdir[id[i]][1] * (1000 - forceParam) + dXYZ[1] * forceParam) / 1000
+			let y = (this.prefdir[id[i]][1] * (1000 - strength) + otherDir[1] * strength) / 1000
 			// Z
-			let newZ = (this.prefdir[id[i]][2] * (1000 - forceParam) + dXYZ[1] * forceParam) / 1000
-			// update U and V
-			this.prefUV[id[i]] = this.getUV(newX, newY, newZ)
-			}
-		}
-	}
-
-	updateRandUV (id) {
-		let str = this.par("LAMBDA_RANDDIR",1)
-		for ( let i = 0; i < id.length; i ++ ) {
-			this.prefUV[id[i]][0] +=  ((Math.random()-.5)/500)*str
-			// if (this.prefUV[id[i]][0] < 0 ) {
-			// 	this.prefUV[id[i]][0] = 0
-			// }
-			// if (this.prefUV[id[i]][0] > 1 ) {
-			// 	this.prefUV[id[i]][0] = 1
-			// }
-			if (this.prefUV[id[i]][0] < 0 ) {
-				this.prefUV[id[i]][0] += 1
-			}
-			if (this.prefUV[id[i]][0] > 1 ) {
-				this.prefUV[id[i]][0] -= 1
-			}
-			this.prefUV[id[i]][1] +=  ((Math.random()-.5)/500)*str
-			// if (this.prefUV[id[i]][1] < 0 ) {
-			// 	this.prefUV[id[i]][1] = 0
-			// }
-			// if (this.prefUV[id[i]][1] > 1 ) {
-			// 	this.prefUV[id[i]][1] = 1
-			// }
-			if (this.prefUV[id[i]][1] < 0 ) {
-				this.prefUV[id[i]][1] *= -1
-			}
-			if (this.prefUV[id[i]][1] > 1 ) {
-				this.prefUV[id[i]][1] = 1 + ( 1 - this.prefUV[id[i]][1] )
-			}
+			let z = (this.prefdir[id[i]][2] * (1000 - strength) + otherDir[2] * strength) / 1000
+			// normalisefactor
+			let length_correction = 1/(Math.sqrt(Math.pow(x,2)+Math.pow(y,2)+Math.pow(z,2)))
+			//assign new values
+			this.prefdir[id[i]][0] = x*length_correction
+			this.prefdir[id[i]][1] = y*length_correction
+			this.prefdir[id[i]][2] = z*length_correction
 		}
 	}
 
@@ -1206,6 +1147,28 @@ class CPM {
 
 	/* ------------- MANIPULATING CELLS ON THE GRID --------------- */
 
+	// helper functions to set the random direction
+	sampleNorm (mu=0, sigma=1) {
+    let u1 = Math.random()
+    let u2 = Math.random()
+
+    let z0 = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(Math.PI*2 * u2)
+    let z1 = Math.sqrt(-2.0 * Math.log(u1)) * Math.sin(Math.PI*2 * u2)
+
+    return z0 * sigma + mu
+  }
+
+  randDir (n) {
+    let dirs = []
+    for ( let i = 0; i < n; i++ ){
+      let x = this.sampleNorm()
+      let y = this.sampleNorm()
+      let z = this.sampleNorm()
+      let length_correction = 1/(Math.sqrt(Math.pow(x,2)+Math.pow(y,2)+Math.pow(z,2)))
+      dirs.push([x*length_correction, y*length_correction, z*length_correction])
+    }
+    return dirs
+  }
 
 	/* Initiate a new cellid for a cell of celltype "kind", and create elements
 	   for this cell in the relevant arrays (cellvolume, cellperimeter, t2k).*/
@@ -1213,8 +1176,7 @@ class CPM {
 		const newid = ++ this.nr_cells
 		this.cellvolume[newid] = 0
 		this.cellperimeter[newid] = 0
-		this.prefUV[newid] = [ 0.1520433619923482, 0.8535533905932737 ]
-		this.prefdir[newid] = [Math.random(), Math.random(), Math.random()]
+		this.prefdir[newid] = this.randDir(1)[0]
 		this.setCellKind( newid, kind )
 		return newid
 	}
