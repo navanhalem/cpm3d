@@ -210,29 +210,17 @@
 
 	function movementDirection(locations, locationsNew) {
 		let differences = []
-		let UV = []
+		let differencesNorm = []
 		for ( let i = 0; i < locations.length; i ++ ) {
 			let difference = []
 			for ( let j = 0; j < locations[0].length; j ++ ) {
 				difference.push(locationsNew[i][j] - locations[i][j])
 			}
 			differences.push(difference)
-			UV.push(C.getUV(difference[0], difference[1], difference[2]))
+      let length_correction = 1/(Math.sqrt(Math.pow(difference[0],2)+Math.pow(difference[1],2)+Math.pow(difference[1],2)))
+			differencesNorm.push([difference[0]*length_correction,difference[1]*length_correction,difference[2]*length_correction])
 		}
-		return [differences, UV]
-	}
-
-	function updateDirForced (id, did) {
-		for ( let i = 0; i < id.length; i ++ ) {
-			let len = 0
-			for ( let j = 0; j < C.prefdir[id[i]].length; j ++ ) {
-				C.prefdir[id[i]][j] += (did[i][j]/100)*C.par("LAMBDA_FORCEDDIR",1)
-				len += Math.pow(C.prefdir[id[i]][j],2)
-			}
-			for ( let j = 0; j < C.prefdir[id[i]].length; j ++ ) {
-				C.prefdir[id[i]][j] /= len
-			}
-		}
+		return [differences, differencesNorm]
 	}
 
 	/* The below function executes two monte carlo steps */
@@ -241,34 +229,21 @@
 		var x2 = C.field_size.x/2, y2 = C.field_size.y/2, z2 = C.field_size.z/2
 		var t0 = performance.now()
 
-		// get cpi for updates
+    // get cpi for updates
 		let cpi = Cs.cellpixelsi()
 
-		// Converts UV into direction
-		C.updateDir(Object.keys( cpi ))
-
-		console.log(C.prefdir[1])
-
 		// get locations for actual direction
-		let locations = this.getLocations(cpi)
+		let locations = getLocations(cpi)
 		C.monteCarloStep()
-		let locationsNew = this.getLocations(cpi)
-		let did = this.movementDirection(locations, locationsNew)
+		let locationsNew = getLocations(cpi)
+		let did = movementDirection(locations, locationsNew)
 		// recent movement in terms of U an V
-		let didUV = did[1]
-		let didXYZ = did[0]
+		let didNorm = did[1]
+		did = did[0]
 
-		// console.log(locations, locationsNew, did, didUV);
-
-		// Update Dir with actual movement
-		// this.updateDirForced(Object.keys( cpi ), did)
-
-
-		// Change dir (since it has been changed according to the actual movement) to UV and update UV with randomness
-		C.updateForcedUV(Object.keys( cpi ), didXYZ)
-		C.updateRandUV(Object.keys( cpi ))
-
-
+		// Change dir to previous movement and add noise
+		C.updateDir(Object.keys( cpi ), didNorm, "LAMBDA_FORCEDDIR")
+		C.updateDir(Object.keys( cpi ), C.randDir(Object(didNorm).length), "LAMBDA_RANDDIR")
 
 		// rotate the viewpoint
 		if( frc_rotate > 0 ){

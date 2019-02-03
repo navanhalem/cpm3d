@@ -851,6 +851,11 @@ class CPM {
 		for( let i = 0; i < p1.length ; i++ ){
 			// direction of the copy attempt on this coordinate is from p1 to p2
 			d1 = p2[i] - p1[i]
+			if(d1 > 1) {
+				d1 = -1
+			} else if(d1 < -1) {
+				d1 = 1
+			}
 			// direction of the gradient
 			d2 = dir[i]
 			r += d1 * d2
