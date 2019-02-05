@@ -217,7 +217,7 @@
 				difference.push(locationsNew[i][j] - locations[i][j])
 			}
 			differences.push(difference)
-      let length_correction = 1/(Math.sqrt(Math.pow(difference[0],2)+Math.pow(difference[1],2)+Math.pow(difference[1],2)))
+      let length_correction = 1/(Math.sqrt(Math.pow(difference[0],2)+Math.pow(difference[1],2)+Math.pow(difference[2],2)))
 			differencesNorm.push([difference[0]*length_correction,difference[1]*length_correction,difference[2]*length_correction])
 		}
 		return [differences, differencesNorm]
