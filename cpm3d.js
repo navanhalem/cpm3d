@@ -32,7 +32,8 @@
 		ADD_FRCS = 0,	// if ADD_FRCS = 0, draw the grid
 		frc_rotate = 0,	// used in combination with the "rot" button to rotate camera.
 		draw_each = 1,	// Time resolution of drawing the grid (in combi with draw_clock)
-		draw_clock = 0	// The drawing clock starts at 0
+		draw_clock = 0,	// The drawing clock starts at 0
+    locationsList = [] // store the most recent locations
 
 	/* Load parameters from settings/CPM3D-template.js (which contains the variable Cset) */
   Cset.conf["LAMBDA_FORCEDDIR"][1] = l_forceddir
@@ -182,8 +183,6 @@
         let move = movementDirection(locationsList.pop(), locationsNew)
         let moveNorm = move[1]
         move = move[0]
-
-        console.log(C.prefdir[1])
 
         // Change dir to previous movement and add noise
         C.updateDir(Object.keys( cpi ), moveNorm, "LAMBDA_FORCEDDIR")
