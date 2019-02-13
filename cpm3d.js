@@ -175,17 +175,20 @@
   		let cpi = Cs.cellpixelsi()
 
   		// get locations for actual direction
-  		let locations = getLocations(cpi)
-  		C.monteCarloStep()
-  		let locationsNew = getLocations(cpi)
-  		let did = movementDirection(locations, locationsNew)
-  		// recent movement in terms of U an V
-  		let didNorm = did[1]
-  		did = did[0]
+      locationsList.unshift(getLocations(cpi))
+      C.monteCarloStep()
+      let locationsNew = getLocations(cpi)
+      if ( locationsList.length >= 16 ) {
+        let move = movementDirection(locationsList.pop(), locationsNew)
+        let moveNorm = move[1]
+        move = move[0]
 
-  		// Change dir to previous movement and add noise
-  		C.updateDir(Object.keys( cpi ), didNorm, "LAMBDA_FORCEDDIR")
-  		C.updateDir(Object.keys( cpi ), C.randDir(Object(didNorm).length), "LAMBDA_RANDDIR")
+        console.log(C.prefdir[1])
+
+        // Change dir to previous movement and add noise
+        C.updateDir(Object.keys( cpi ), moveNorm, "LAMBDA_FORCEDDIR")
+        C.updateDir(Object.keys( cpi ), C.randDir(Object(moveNorm).length), "LAMBDA_RANDDIR")
+      }
 
       // to keep track of locations
       Cs.centroids()
