@@ -16,7 +16,7 @@ var Cset = {
 		MAX_ACT : [0,0],
 		P : [0,5400],
 		V : [0,1000],
-		J_T_STROMA : [NaN,4],
+		J_T_STROMA : [NaN,-5],
 		J_T_ECM : [NaN,5],
 		J_T_T : [ [NaN,NaN], [NaN,10] ],
 		T : 20,

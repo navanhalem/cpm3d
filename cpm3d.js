@@ -64,58 +64,29 @@
 
 		// Cim = new CPMCanvas( C ) // dummy
 		Cs = new CPMStats( C )
-		// var stromacoordinates = []
-		// let xsize = Cset.field_size.x
-		// let zsize = Cset.field_size.z
-		// for ( let i = 0; i < stromadata.length-1; i++ ) {
-		// 	if (stromadata[i] > 100) {
-		// 		let x = i%xsize
-		// 		let y = (i/(xsize*zsize)) >> 0
-		// 		let z = ((i%(xsize*zsize))/xsize) >> 0
-		// 		console.log(i, [x, y, z])
-		// 		stromacoordinates.push([x, y, z])
-		// 	}
-		// }
-		//
-		// C.addStroma(stromacoordinates)
-		// C.addStromaBorder(-1)
 
 		var stromacoordinates = []
 
-    for ( let x = 0; x < field_size; x ++ ) {
-      for ( let y = 0; y < field_size; y ++ ) {
-        for ( let z = 0; z < field_size; z ++ ) {
-          // let avg = ( x + y + z ) / 3
-          // if (Math.abs(x - avg) < 2 && Math.abs(y - avg) < 2 && Math.abs(z - avg) < 2) {
-          // 	stromacoordinates.push([x, y, z])
-          // }
-          if ( Math.pow(Math.abs(x - 0.6*field_size ), Math.abs(y - 0.6*field_size )) < 11 && Math.abs(x - 0.6*field_size ) < 5 && Math.abs(y - 0.6*field_size ) < 5 || Math.pow(Math.abs(x - 0.6*field_size ), Math.abs(z - 0.6*field_size )) < 11 && Math.abs(x - 0.6*field_size ) < 5 && Math.abs(z - 0.6*field_size ) < 5 || Math.pow(Math.abs(y - 0.6*field_size ), Math.abs(z - 0.6*field_size )) < 11 && Math.abs(y - 0.6*field_size ) < 5 && Math.abs(z - 0.6*field_size ) < 5 ) {
-            stromacoordinates.push([x, y, z])
-          }
-        }
-      }
-    }
+    for ( let x = 0; x < Cset.field_size.x; x ++ ) {
+			for ( let y = 0; y < Cset.field_size.y; y ++ ) {
+				for ( let z = 0; z < Cset.field_size.z; z ++ ) {
+					if ( Math.pow(Math.abs(x - 0.6*field_size ), Math.abs(y - 0.6*field_size )) < 4 && Math.abs(x - 0.6*field_size ) < 3 && Math.abs(y - 0.6*field_size ) < 3 ) {
+						stromacoordinates.push([x, y, z])
+					} else if ( Math.pow(Math.abs(x - 0.3*field_size ), Math.abs(y - 0.3*field_size )) < 4 && Math.abs(x - 0.3*field_size ) < 3 && Math.abs(y - 0.3*field_size ) < 3 ) {
+						stromacoordinates.push([x, y, z])
+					} else if ( Math.pow(Math.abs(z - 0.6*field_size ), Math.abs(y - 0.6*field_size )) < 4 && Math.abs(z - 0.6*field_size ) < 3 && Math.abs(y - 0.6*field_size ) < 3 ) {
+						stromacoordinates.push([x, y, z])
+					} else if ( Math.pow(Math.abs(z - 0.3*field_size ), Math.abs(y - 0.3*field_size )) < 4 && Math.abs(z - 0.3*field_size ) < 3 && Math.abs(y - 0.3*field_size ) < 3 ) {
+						stromacoordinates.push([x, y, z])
+					} else if ( Math.pow(Math.abs(z - 0.6*field_size ), Math.abs(x - 0.6*field_size )) < 4 && Math.abs(z - 0.6*field_size ) < 3 && Math.abs(x - 0.6*field_size ) < 3 ) {
+						stromacoordinates.push([x, y, z])
+					} else if ( Math.pow(Math.abs(z - 0.3*field_size ), Math.abs(x - 0.3*field_size )) < 4 && Math.abs(z - 0.3*field_size ) < 3 && Math.abs(x - 0.3*field_size ) < 3 ) {
+						stromacoordinates.push([x, y, z])
+					}
+				}
+			}
+		}
 
-		// for ( let x = 0; x < Cset.field_size.x; x ++ ) {
-		// 	for ( let y = 0; y < Cset.field_size.y; y ++ ) {
-		// 		for ( let z = 0; z < Cset.field_size.z; z ++ ) {
-		// 			if (Math.abs(x - 0.25*Cset.field_size.x) < 2 && Math.abs(z - 0.75*Cset.field_size.z) < 2 || Math.abs(x - 0.75*Cset.field_size.x) < 2 && Math.abs(z - 0.25*Cset.field_size.z) < 2) {
-		// 				stromacoordinates.push([x, y, z])
-		// 			}
-		// 		}
-		// 	}
-		// }
-
-		// for ( let x = 0; x < Cset.field_size.x; x ++ ) {
-		// 	for ( let y = 0; y < Cset.field_size.y; y ++ ) {
-		// 		for ( let z = 0; z < Cset.field_size.z; z ++ ) {
-		// 			let avg = ( x + y + z ) / 3
-		// 			if (Math.abs(x - avg) < 2 && Math.abs(y - avg) < 2 && Math.abs(z - avg) < 2) {
-		// 				stromacoordinates.push([x, y, z])
-		// 			}
-		// 		}
-		// 	}
-		// }
     if ( stroma ) {
       C.addStroma(stromacoordinates)
     }
@@ -190,7 +161,11 @@
       }
 
       // to keep track of locations
-      Cs.centroids()
+      if (stroma) {
+        Cs.centroidsStroma()
+      } else {
+        Cs.centroids()
+      }
     }
 	}
 

@@ -491,6 +491,32 @@ CPMStats.prototype = {
 		}
 	},
 
+	// center of mass (print to console)
+	centroidsStroma : function(){
+		var cp = this.cellpixelsi()
+		var tx = Object.keys( cp )
+		var cvec, i
+		var onStromaList = this.cellsOnNetwork()
+
+		// loop over the cells in tx to get their centroids
+		for( i = 0; i < tx.length; i++ ){
+			cvec = this.getCentroidOf( tx[i], cp[tx[i]] )
+			onstroma = 0
+			if (tx[i] in onStromaList) {
+				onstroma = 1
+			}
+			// eslint-disable-next-line no-console
+			console.log(
+				tx[i] + "\t" +
+				this.C.time + "\t" +
+				this.C.time + "\t" +
+				cvec.join("\t") +
+				"\t" + onstroma
+			)
+
+		}
+	},
+
 
 	// ------------ HELPER FUNCTIONS
 

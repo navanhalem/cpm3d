@@ -143,7 +143,7 @@
 		// 		}
 		// 	}
 		// }
-
+		let tot = 0;
 		for ( let x = 0; x < Cset.field_size.x; x ++ ) {
 			for ( let y = 0; y < Cset.field_size.y; y ++ ) {
 				for ( let z = 0; z < Cset.field_size.z; z ++ ) {
@@ -151,12 +151,29 @@
 					// if (Math.abs(x - avg) < 2 && Math.abs(y - avg) < 2 && Math.abs(z - avg) < 2) {
 					// 	stromacoordinates.push([x, y, z])
 					// }
-					if ( Math.pow(Math.abs(x - 0.6*field_size ), Math.abs(y - 0.6*field_size )) < 11 && Math.abs(x - 0.6*field_size ) < 5 && Math.abs(y - 0.6*field_size ) < 5 ) {
+					if ( Math.pow(Math.abs(x - 0.6*field_size ), Math.abs(y - 0.6*field_size )) < 4 && Math.abs(x - 0.6*field_size ) < 3 && Math.abs(y - 0.6*field_size ) < 3 ) {
 						stromacoordinates.push([x, y, z])
+						tot ++
+					} else if ( Math.pow(Math.abs(x - 0.3*field_size ), Math.abs(y - 0.3*field_size )) < 4 && Math.abs(x - 0.3*field_size ) < 3 && Math.abs(y - 0.3*field_size ) < 3 ) {
+						stromacoordinates.push([x, y, z])
+						tot ++
+					} else if ( Math.pow(Math.abs(z - 0.6*field_size ), Math.abs(y - 0.6*field_size )) < 4 && Math.abs(z - 0.6*field_size ) < 3 && Math.abs(y - 0.6*field_size ) < 3 ) {
+						stromacoordinates.push([x, y, z])
+						tot ++
+					} else if ( Math.pow(Math.abs(z - 0.3*field_size ), Math.abs(y - 0.3*field_size )) < 4 && Math.abs(z - 0.3*field_size ) < 3 && Math.abs(y - 0.3*field_size ) < 3 ) {
+						stromacoordinates.push([x, y, z])
+						tot ++
+					} else if ( Math.pow(Math.abs(z - 0.6*field_size ), Math.abs(x - 0.6*field_size )) < 4 && Math.abs(z - 0.6*field_size ) < 3 && Math.abs(x - 0.6*field_size ) < 3 ) {
+						stromacoordinates.push([x, y, z])
+						tot ++
+					} else if ( Math.pow(Math.abs(z - 0.3*field_size ), Math.abs(x - 0.3*field_size )) < 4 && Math.abs(z - 0.3*field_size ) < 3 && Math.abs(x - 0.3*field_size ) < 3 ) {
+						stromacoordinates.push([x, y, z])
+						tot ++
 					}
 				}
 			}
 		}
+		console.log(tot)
 		C.addStroma(stromacoordinates)
 
 		sim = new simulation( C, Cim, Cs, simsettings )
@@ -167,7 +184,7 @@
 
 
 		if ( n_cells == 1 ) {
-      C.seedCellAt( 1, [10,10,10] )
+      C.seedCellAt( 1, [25,25,25] )
     } else {
   		for( var i = 0 ; i < n_cells ; i ++ ){
   			C.seedCell(1)
@@ -240,6 +257,9 @@
 		// recent movement in terms of U an V
 		let didNorm = did[1]
 		did = did[0]
+
+		// console.log(Cs.cellsOnNetwork())
+		Cs.centroids()
 
 		// Change dir to previous movement and add noise
 		C.updateDir(Object.keys( cpi ), didNorm, "LAMBDA_FORCEDDIR")
@@ -332,8 +352,8 @@
 		<!--<button onclick="requestAnimationFrame( mainloop )">step simulation</button>-->
 		<button onclick="startanim()">start </button>
 		<button onclick="reset()"> reset </button>
-		<!--<button onclick="TAKE_SHOT=1">rec</button>-->
-		<!--<button onclick="TAKE_SHOT=0">stop rec </button>-->
+		<button onclick="TAKE_SHOT=1">rec</button>
+		<button onclick="TAKE_SHOT=0">stop rec </button>
 		<!--<button onclick="TAKE_SHOT=1;frc_rotate=360">rot </button>-->
 		<!--<script>
 			if( dim==3 ){
