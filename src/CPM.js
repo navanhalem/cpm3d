@@ -820,13 +820,21 @@ class CPM {
 			// Y
 			let y = (this.prefdir[id[i]][1] * (1000 - strength) + otherDir[1] * strength) / 1000
 			// Z
-			let z = (this.prefdir[id[i]][2] * (1000 - strength) + otherDir[2] * strength) / 1000
-			// normalisefactor
-			let length_correction = 1/(Math.sqrt(Math.pow(x,2)+Math.pow(y,2)+Math.pow(z,2)))
+			let z, length_correction
+			if( this.ndim == 3 ) {
+				z = (this.prefdir[id[i]][2] * (1000 - strength) + otherDir[2] * strength) / 1000
+				// normalisefactor
+				length_correction = 1/(Math.sqrt(Math.pow(x,2)+Math.pow(y,2)+Math.pow(z,2)))
+			} else {
+				// normalisefactor
+				length_correction = 1/(Math.sqrt(Math.pow(x,2)+Math.pow(y,2)))
+			}
 			//assign new values
 			this.prefdir[id[i]][0] = x*length_correction
 			this.prefdir[id[i]][1] = y*length_correction
-			this.prefdir[id[i]][2] = z*length_correction
+			if( this.ndim == 3 ) {
+				this.prefdir[id[i]][2] = z*length_correction
+			}
 		}
 	}
 

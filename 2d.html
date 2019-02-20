@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2d CPM</title>
+<meta charset="utf-8">
+<script type="text/javascript" src="src/DiceSet.js"></script>
+<script type="text/javascript" src="src/CPM.js"></script>
+<script type="text/javascript" src="src/CPMStats.js"></script>
+<script type="text/javascript" src="src/CPMCanvas.js"></script>
+<script type="text/javascript" src="src/TrackCanvas.js"></script>
+<script type="text/javascript">
+
+var track_canvas, track_ctx, zoom = 8, C, Cim, Cstat, Ctracks
+
+function initialize(){
+	// CPM object
+	C = new CPM( 2, {x: 50, y:50}, {
+		LAMBDA_CONNECTIVITY : [0,0],
+		LAMBDA_RANDDIR : [0,0],
+		LAMBDA_FORCEDDIR : [0,100],
+		LAMBDA_DIR : [0,200],
+		LAMBDA_CENTER : [0,0],
+		LAMBDA_SA : [0,0],
+		LAMBDA_P : [0,.5],
+		LAMBDA_V : [0,25],
+		LAMBDA_ACT : [0,0],
+		MAX_ACT : [0,0],
+		P : [0,125],
+		V : [0,100],
+		J_T_STROMA : [NaN,4],
+		J_T_ECM : [NaN,5],
+		J_T_T : [ [NaN,NaN], [NaN,10] ],
+		T : 20,
+		ACT_MEAN : "geometric",
+		GRADIENT_TYPE : "custom"
+	})
+	C.addStromaBorder()
+
+	locationsList = []
+
+	// Create canvas, stats, and track object
+	Cim = new CPMCanvas( C, {zoom:zoom} )
+	Cs = new CPMStats( C )
+
+	// Add second canvas to the right to draw tracks
+	Ctracks = new TrackCanvas( Cs, {zoom:zoom} )
+	document.body.appendChild(Ctracks.el)
+
+	// Seed the cell
+	for ( let i = 0; i < 15; i ++ ) {
+		C.seedCell( 1 )
+	}
+
+	// burnin phase
+	for( i = 0 ; i < 50 ; i ++ ){
+		C.monteCarloStep()
+	}
+
+	timestep()
+}
+
+function getLocations (cpi) {
+	let locations = []
+	let ids = Object.keys( cpi )
+	for ( let i = 0; i < ids.length; i ++ ) {
+		locations.push(Cs.getCentroidOf(ids[i], cpi[ids[i]]))
+	}
+	return locations
+}
+
+function movementDirection(locations, locationsNew) {
+	let differences = []
+	let differencesNorm = []
+	for ( let i = 0; i < locations.length; i ++ ) {
+		let difference = []
+		for ( let j = 0; j < locations[0].length; j ++ ) {
+			difference.push(locationsNew[i][j] - locations[i][j])
+		}
+		differences.push(difference)
+		let length_correction = 1/(Math.sqrt(Math.pow(difference[0],2)+Math.pow(difference[1],2)))
+		differencesNorm.push([difference[0]*length_correction,difference[1]*length_correction])
+	}
+	return [differences, differencesNorm]
+}
+
+function timestep(){
+
+	let cpi = Cs.cellpixelsi()
+
+	// get locations for actual direction
+	locationsList.unshift(getLocations(cpi))
+	C.monteCarloStep()
+	let locationsNew = getLocations(cpi)
+	if ( locationsList.length >= 16 ) {
+		let move = movementDirection(locationsList.pop(), locationsNew)
+		let moveNorm = move[1]
+		move = move[0]
+
+		// Change dir to previous movement and add noise
+		C.updateDir(Object.keys( cpi ), moveNorm, "LAMBDA_FORCEDDIR")
+		C.updateDir(Object.keys( cpi ), C.randDir(Object(moveNorm).length), "LAMBDA_RANDDIR")
+	}
+
+	// Clear canvas (all pixels white, and draw stroma border)
+	Cim.clear( "FFFFFF" )
+	Cim.drawStroma( "AAAAAA" )
+
+	// Color cells in green and draw their activity values
+	Cim.drawCells( 1, "00FF00" )
+	Cim.drawCellBorders( 1, "000000" )
+	Cim.drawActivityValues( 1 )
+
+	Ctracks.drawTracks( "000000", 0.5 )
+	requestAnimationFrame( timestep )
+}
+</script>
+<body onload="initialize()">
+
+</body>
+
+</html>

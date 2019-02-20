@@ -1,29 +1,34 @@
-<!DOCTYPE html>
-<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>1-cell CPM</title>
-<meta charset="utf-8">
-<script type="text/javascript" src="src/DiceSet.js"></script>
-<script type="text/javascript" src="src/CPM.js"></script>
-<script type="text/javascript" src="src/CPMStats.js"></script>
-<script type="text/javascript" src="src/CPMCanvas.js"></script>
-<script type="text/javascript" src="src/TrackCanvas.js"></script>
-<script type="text/javascript">
 
-var track_canvas, track_ctx, zoom = 4, C, Cim, Cstat, Ctracks
+var DiceSet = require("./src/DiceSet.js")
+var CPM = require("./src/CPM.js")
+var CPMStats = require("./src/CPMStats.js")
+var CPMCanvas = require("./src/CPMCanvas.js")
+var TrackCanvas = require("./src/TrackCanvas.js")
+
+var track_canvas, track_ctx, zoom = 8, C, Cim, Cstat, Ctracks
+
+var l_forceddir = parseInt(process.argv[2]) || 0
+var l_randdir = parseInt(process.argv[3]) || 0
+var l_dir = parseInt(process.argv[4]) || 0
+var density = parseInt(process.argv[5]) || 50
+var field_size = parseInt(process.argv[6]) || 100
+var runtime = parseInt(process.argv[7]) || 3000
+var l_act = parseInt(process.argv[9]) || 0
+var m_act = parseInt(process.argv[10]) || 0
 
 function initialize(){
 	// CPM object
-	C = new CPM( 2, {x: 70, y:70}, {
+	C = new CPM( 2, {x: field_size, y:field_size}, {
 		LAMBDA_CONNECTIVITY : [0,0],
-		LAMBDA_RANDDIR : [0,0],
-		LAMBDA_FORCEDDIR : [0,5],
-		LAMBDA_DIR : [0,200],
+		LAMBDA_RANDDIR : [0,l_randdir],
+		LAMBDA_FORCEDDIR : [0,l_forceddir],
+		LAMBDA_DIR : [0,l_dir],
 		LAMBDA_CENTER : [0,0],
 		LAMBDA_SA : [0,0],
 		LAMBDA_P : [0,.5],
 		LAMBDA_V : [0,25],
-		LAMBDA_ACT : [0,0],
-		MAX_ACT : [0,0],
+		LAMBDA_ACT : [0,l_act],
+		MAX_ACT : [0,m_act],
 		P : [0,125],
 		V : [0,100],
 		J_T_STROMA : [NaN,4],
@@ -33,7 +38,7 @@ function initialize(){
 		ACT_MEAN : "geometric",
 		GRADIENT_TYPE : "custom"
 	})
-	C.addStromaBorder()
+	// C.addStromaBorder()
 
 	locationsList = []
 
@@ -41,21 +46,23 @@ function initialize(){
 	Cim = new CPMCanvas( C, {zoom:zoom} )
 	Cs = new CPMStats( C )
 
-	// Add second canvas to the right to draw tracks
-	Ctracks = new TrackCanvas( Cs, {zoom:zoom} )
-	document.body.appendChild(Ctracks.el)
 
 	// Seed the cell
-	for ( let i = 0; i < 30; i ++ ) {
+	for ( let i = 0; i < (density/100/*as pergentage*/)*(field_size*field_size/100/*volume parameter*/); i ++ ) {
 		C.seedCell( 1 )
 	}
 
 	// burnin phase
-	for( i = 0 ; i < 50 ; i ++ ){
+	for( i = 0 ; i < 100 ; i ++ ){
 		C.monteCarloStep()
 	}
 
-	timestep()
+  for ( let t = 0; t < runtime; t ++ ) {
+		if(t % 10 == 0) {
+			Cs.centroids()
+		}
+    timestep()
+  }
 }
 
 function getLocations (cpi) {
@@ -95,8 +102,6 @@ function timestep(){
 		let moveNorm = move[1]
 		move = move[0]
 
-		console.log(C.prefdir[1])
-
 		// Change dir to previous movement and add noise
 		C.updateDir(Object.keys( cpi ), moveNorm, "LAMBDA_FORCEDDIR")
 		C.updateDir(Object.keys( cpi ), C.randDir(Object(moveNorm).length), "LAMBDA_RANDDIR")
@@ -111,12 +116,8 @@ function timestep(){
 	Cim.drawCellBorders( 1, "000000" )
 	Cim.drawActivityValues( 1 )
 
-	Ctracks.drawTracks( "000000", 0.5 )
-	requestAnimationFrame( timestep )
+
+
 }
-</script>
-<body onload="initialize()">
 
-</body>
-
-</html>
+initialize()
