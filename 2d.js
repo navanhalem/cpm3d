@@ -48,13 +48,13 @@ function initialize(){
 
 
 	// Seed the cell
-	for ( let i = 0; i < (density/100/*as pergentage*/)*(field_size*field_size/100/*volume parameter*/); i ++ ) {
+	for ( let i = 0; i < (density/100/*as percentage*/)*(field_size*field_size/100/*volume parameter*/); i ++ ) {
 		C.seedCell( 1 )
 	}
 
 	// burnin phase
 	for( i = 0 ; i < 10000 ; i ++ ){
-		C.monteCarloStep()
+		timestep()
 	}
 
   for ( let t = 0; t < runtime; t ++ ) {
