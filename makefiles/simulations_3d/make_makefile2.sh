@@ -1,9 +1,9 @@
 settings=$settingsfolder/$expname-settings.js
 template=$settingsfolder/$expname-template.js #txt
 
-paramfile=params.txt
+paramfile=params2.txt
 nsim=5
-EXPNAME=order2d
+EXPNAME=order3d
 
 # ---------------------------------------------------------------------
 # CODE:
@@ -32,7 +32,7 @@ for p in $(seq 1 $np) ; do
 		# trackfiles
 		FILE=../../data/order_20190222/$EXPNAME/$NAME-sim$sim.txt
 		echo "$FILE : ../../2d.js"
-		echo -e "\t@"node \$\< $LFORCED $LRAND 200 $DENSITY 100 5000 0 0 "> \$@"
+		echo -e "\t@"node \$\< $LFORCED $LRAND 200 $DENSITY 50 5000 0 0 0 "> \$@"
 		echo "all : "$FILE
 	done
 done

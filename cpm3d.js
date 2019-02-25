@@ -16,7 +16,8 @@
   var l_forceddir = parseInt(process.argv[2]) || 0
   var l_randdir = parseInt(process.argv[3]) || 0
   var l_dir = parseInt(process.argv[4]) || 0
-  var n_cells = parseInt(process.argv[5]) || 1
+  var density = parseInt(process.argv[5]) || 1
+  var n_cells = Math.floor()(density/100/*as percentage*/)*(field_size*field_size*field_size/1000/*volume param*/))
   var field_size = parseInt(process.argv[6]) || 500
   var runtime = parseInt(process.argv[7]) || 3000
   var stroma = parseInt(process.argv[8]) || 0
