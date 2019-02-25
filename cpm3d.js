@@ -17,12 +17,13 @@
   var l_randdir = parseInt(process.argv[3]) || 0
   var l_dir = parseInt(process.argv[4]) || 0
   var density = parseInt(process.argv[5]) || 1
-  var n_cells = Math.floor()(density/100/*as percentage*/)*(field_size*field_size*field_size/1000/*volume param*/))
   var field_size = parseInt(process.argv[6]) || 500
   var runtime = parseInt(process.argv[7]) || 3000
   var stroma = parseInt(process.argv[8]) || 0
   var l_act = parseInt(process.argv[9]) || 0
   var m_act = parseInt(process.argv[10]) || 0
+  var n_cells = Math.floor((density/100/*as percentage*/)*(field_size*field_size*field_size/1000/*volume param*/))
+
 
 	/* Global variables that are not model parameters
 		stopit tracks whether the simulation is running.
