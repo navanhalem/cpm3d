@@ -140,38 +140,50 @@
 		return [differences, differencesNorm]
 	}
 
-	/* The below function executes two monte carlo steps */
+  function step() {
+    // get cpi for updates
+    let cpi = Cs.cellpixelsi()
+
+    // get locations for actual direction
+    locationsList.unshift(getLocations(cpi))
+    C.monteCarloStep()
+    let locationsNew = getLocations(cpi)
+    if ( locationsList.length >= 16 ) {
+      let move = movementDirection(locationsList.pop(), locationsNew)
+      let moveNorm = move[1]
+      move = move[0]
+
+      // Change dir to previous movement and add noise
+      C.updateDir(Object.keys( cpi ), moveNorm, "LAMBDA_FORCEDDIR")
+      C.updateDir(Object.keys( cpi ), C.randDir(Object(moveNorm).length), "LAMBDA_RANDDIR")
+    }
+  }
+
+
 	function mainloop(){
-		// compute the midpoint of the grid.
+
+    for( let i = 0; i < 10000; i ++) {
+      step()
+    }
+
     for ( let i = 0;i < runtime; i++) {
-
-      // get cpi for updates
-  		let cpi = Cs.cellpixelsi()
-
-  		// get locations for actual direction
-      locationsList.unshift(getLocations(cpi))
-      C.monteCarloStep()
-      let locationsNew = getLocations(cpi)
-      if ( locationsList.length >= 16 ) {
-        let move = movementDirection(locationsList.pop(), locationsNew)
-        let moveNorm = move[1]
-        move = move[0]
-
-        // Change dir to previous movement and add noise
-        C.updateDir(Object.keys( cpi ), moveNorm, "LAMBDA_FORCEDDIR")
-        C.updateDir(Object.keys( cpi ), C.randDir(Object(moveNorm).length), "LAMBDA_RANDDIR")
-      }
-
+      step()
       // to keep track of locations
-      if (stroma) {
-        Cs.centroidsStroma()
-      } else {
-        Cs.centroids()
+  		if(i % 10 == 0) {
+        if (stroma) {
+          Cs.centroidsStroma()
+        } else {
+          Cs.centroids()
+        }
       }
     }
 	}
 
-	function startanim(){
+	function startanim(){if (stroma) {
+            Cs.centroidsStroma()
+          } else {
+            Cs.centroids()
+          }
 		frameCaptureSocket = new WebSocket(WS_SERVER)
 		frameCaptureSocket.onclose = function(e){
 			console.log( e )
