@@ -3,7 +3,7 @@ template=$settingsfolder/$expname-template.js #txt
 
 paramfile=params2.txt
 nsim=5
-EXPNAME=order3d
+EXPNAME=order3d_stroma
 
 # ---------------------------------------------------------------------
 # CODE:
