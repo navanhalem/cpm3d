@@ -1,9 +1,9 @@
 settings=$settingsfolder/$expname-settings.js
 template=$settingsfolder/$expname-template.js #txt
 
-paramfile=params.txt
+paramfile=params4.txt
 nsim=5
-EXPNAME=order3d
+EXPNAME=order3d_stroma
 
 # ---------------------------------------------------------------------
 # CODE:
@@ -21,7 +21,7 @@ for p in $(seq 1 $np) ; do
 	LRAND=$( cat $paramfile | awk -v line=$p 'NR==line{print $2}')
 	DENSITY=$( cat $paramfile | awk -v line=$p 'NR==line{print $3}')
 		
-	NAME=$EXPNAME-lforced$LFORCED-lrand$LRAND-density$DENSITY
+	NAME=$EXPNAME-lforced$LFORCED-lrand$LRAND-density$DENSITY-stroma1
 
 	# Now the recipes for the individual simulation tracks
 	for sim in $(seq 1 $nsim) ; do
@@ -31,8 +31,8 @@ for p in $(seq 1 $np) ; do
 
 		# trackfiles
 		FILE=../../data/order_20190222/$EXPNAME/$NAME-sim$sim.txt
-		echo "$FILE : ../../2d.js"
-		echo -e "\t@"node \$\< $LFORCED $LRAND 200 $DENSITY 50 5000 0 0 0 "> \$@"
+		echo "$FILE : ../../cpm3d.js"
+		echo -e "\t@"node \$\< $LFORCED $LRAND 200 $DENSITY 50 5000 1 0 0 "> \$@"
 		echo "all : "$FILE
 	done
 done
