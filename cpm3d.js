@@ -69,21 +69,28 @@
 
 		var stromacoordinates = []
 
-    for ( let x = 0; x < Cset.field_size.x; x ++ ) {
+    let tot = 0;
+		for ( let x = 0; x < Cset.field_size.x; x ++ ) {
 			for ( let y = 0; y < Cset.field_size.y; y ++ ) {
 				for ( let z = 0; z < Cset.field_size.z; z ++ ) {
 					if ( Math.pow(Math.abs(x - 0.6*field_size ), Math.abs(y - 0.6*field_size )) < 4 && Math.abs(x - 0.6*field_size ) < 3 && Math.abs(y - 0.6*field_size ) < 3 ) {
 						stromacoordinates.push([x, y, z])
+						tot ++
 					} else if ( Math.pow(Math.abs(x - 0.3*field_size ), Math.abs(y - 0.3*field_size )) < 4 && Math.abs(x - 0.3*field_size ) < 3 && Math.abs(y - 0.3*field_size ) < 3 ) {
 						stromacoordinates.push([x, y, z])
+						tot ++
 					} else if ( Math.pow(Math.abs(z - 0.6*field_size ), Math.abs(y - 0.6*field_size )) < 4 && Math.abs(z - 0.6*field_size ) < 3 && Math.abs(y - 0.6*field_size ) < 3 ) {
 						stromacoordinates.push([x, y, z])
+						tot ++
 					} else if ( Math.pow(Math.abs(z - 0.3*field_size ), Math.abs(y - 0.3*field_size )) < 4 && Math.abs(z - 0.3*field_size ) < 3 && Math.abs(y - 0.3*field_size ) < 3 ) {
 						stromacoordinates.push([x, y, z])
+						tot ++
 					} else if ( Math.pow(Math.abs(z - 0.6*field_size ), Math.abs(x - 0.6*field_size )) < 4 && Math.abs(z - 0.6*field_size ) < 3 && Math.abs(x - 0.6*field_size ) < 3 ) {
 						stromacoordinates.push([x, y, z])
+						tot ++
 					} else if ( Math.pow(Math.abs(z - 0.3*field_size ), Math.abs(x - 0.3*field_size )) < 4 && Math.abs(z - 0.3*field_size ) < 3 && Math.abs(x - 0.3*field_size ) < 3 ) {
 						stromacoordinates.push([x, y, z])
+						tot ++
 					}
 				}
 			}
@@ -91,6 +98,7 @@
 
     if ( stroma ) {
       C.addStroma(stromacoordinates)
+      n_cells = Math.floor((density/100/*as percentage*/)*( ((field_size*field_size*field_size) - 5904 ) /1000/*volume param*/))
     }
 
 		sim = new simulation( C, null, Cs, simsettings )
